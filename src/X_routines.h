@@ -4,7 +4,7 @@
 
 #ifndef INC_2_3_X_ROUTINES_H
 #define INC_2_3_X_ROUTINES_H
-#define ProgramName "Laboratory work 3"
+#define ProgramName "Laboratory work 4"
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xos.h>

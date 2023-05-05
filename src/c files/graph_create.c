@@ -27,6 +27,7 @@ point_t *tri_graph_create(point_t *tar_graph, int graph_size) {
     serv_point_t *serv_points = malloc(sizeof (serv_point_t) * graph_size);
     double indent_x = (double) 100 / SCREEN_WIDTH;
     double indent_y = (double) 400 / SCREEN_HEIGHT;
+
     int point_1 = 0;
     int point_2 = graph_size / 3;
     int point_3 = 2 * graph_size / 3;
@@ -68,9 +69,14 @@ int **mulmr(double coefficient, double **double_mat, int **target_mat, int size1
     for (int i = 0; i < size1; i++) {
         for (int j = 0; j < size2; j++) {
             if (!oriented) {
-                target_mat[i][j] = coefficient * double_mat[i][j] < 1 ?
-                                   0 : 1;
-                if (target_mat[i][j]) target_mat[j][i] = 1;
+                if (coefficient * double_mat[i][j] < 1) {
+                    if (target_mat[i][j] != 1)
+                        target_mat[i][j] = 0;
+                }
+                else {
+                    target_mat[i][j] = 1;
+                    target_mat[j][i] = 1;
+                }
             }
             else {
                 target_mat[i][j] = coefficient * double_mat[i][j] < 1 ?
@@ -81,11 +87,26 @@ int **mulmr(double coefficient, double **double_mat, int **target_mat, int size1
     return target_mat;
 }
 
+
 void free_mat (size_t **target_mat, int size2) {
     for (int i = 0; i <= size2; i++) {
         free(target_mat[i]);
     }
     free(target_mat);
+}
+
+void print_power (int **target_mat, int size) {
+    for (int i = 0; i < size; i++) {
+        int positive = 0;
+        int negative = 0;
+        for (int j = 0; j < size; j++) {
+            if (target_mat[i][j]) positive++;
+            if (target_mat[j][i]) negative++;
+        }
+        printf("додатня степінь вершини %2i: %2i | ", i + 1, positive);
+        printf("від'ємна степінь вершини %2i: %2i", i + 1, negative);
+        printf("\n");
+    }
 }
 
 void print_mat(int **target_mat, int size1, int size2) {

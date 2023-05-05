@@ -16,7 +16,7 @@ int main() {
     srand(n1 * 1000 + n2 * 100 + n3 * 10 + n4);
 
     int n = 10 + n3;
-    double c = 1.0 - n3 * 0.02 - n4 * 0.005 - 0.25;
+    double c = 1.0 - n3 * 0.01 - n4 * 0.01 - 0.3;
     double **service_mat;
     service_mat = randm(n, n);
     int **rel_mat;
@@ -37,7 +37,7 @@ int main() {
                 break;
             case KeyPress:
                 if (XLookupString(&event.xkey, text, 255, &key, 0) == 1) {
-                    int oriented = 42;
+                    int oriented;
                     switch (text[0]) {
                         case 'q':
                             free_mat(service_mat, n);
@@ -48,22 +48,29 @@ int main() {
                             break;
                         case 'o':
                             oriented = 1;
+                            printf("drawing oriented relation matrix: \n");
+                            redraw_x();
+                            rel_mat = mulmr(c, service_mat, rel_mat, n, n, oriented);
+                            print_mat(rel_mat, n, n);
+                            print_power(rel_mat, n);
+                            graph = tri_graph_create(graph, n);
+                            draw_graph(graph, rel_mat, n, oriented);
+                            draw_graph_vertices(graph, n);
                             break;
                         case 'u':
                             oriented = 0;
+                            printf("drawing unoriented relation matrix: \n");
+                            redraw_x();
+                            rel_mat = mulmr(c, service_mat, rel_mat, n, n, oriented);
+                            print_mat(rel_mat, n, n);
+                            print_power(rel_mat, n);
+                            graph = tri_graph_create(graph, n);
+                            draw_graph(graph, rel_mat, n, oriented);
+                            draw_graph_vertices(graph, n);
                             break;
                         default:
                             redraw_x();
-                            oriented = 42;
-                    }
-                    if (oriented != 42) {
-                        redraw_x();
-                        rel_mat = mulmr(c, service_mat, rel_mat, n, n, oriented);
-                        printf("drawing unoriented relation matrix: \n");
-                        print_mat(rel_mat, n, n);
-                        graph = tri_graph_create(graph, n);
-                        draw_graph(graph, rel_mat, n, oriented);
-                        draw_graph_vertices(graph, n);
+                            break;
                     }
                     break;
                 }
