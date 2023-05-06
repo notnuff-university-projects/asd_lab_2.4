@@ -43,5 +43,4 @@ typedef struct arrows_list_t {
     int py;
     struct arrows_list_t *next_arr;
 } a_list_t;
-
 #endif //INC_2_3_CONSTS_N_STRUCTURES_H

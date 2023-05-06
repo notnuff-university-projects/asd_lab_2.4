@@ -18,6 +18,13 @@ int **mat_create(int size1, int size2) {
     for (int i = 0; i < size1; i++) {
         result_mat[i] = (int *) malloc(sizeof(int) * size2);
     }
+
+    for (int i = 0; i < size1; i++) {
+        for (int j = 0; j < size2; j++) {
+            result_mat[i][j] = 0;
+        }
+    }
+
     return result_mat;
 }
 
@@ -88,14 +95,17 @@ int **mulmr(double coefficient, double **double_mat, int **target_mat, int size1
 }
 
 
-void free_mat (size_t **target_mat, int size2) {
-    for (int i = 0; i <= size2; i++) {
+void free_mat (size_t **target_mat, int size) {
+    for (int i = 0; i < size; i++) {
         free(target_mat[i]);
     }
     free(target_mat);
 }
 
-void print_power (int **target_mat, int size) {
+void print_power (int **target_mat, int size, int oriented) {
+
+    int powr_mat[size][2];
+
     for (int i = 0; i < size; i++) {
         int positive = 0;
         int negative = 0;
@@ -103,10 +113,137 @@ void print_power (int **target_mat, int size) {
             if (target_mat[i][j]) positive++;
             if (target_mat[j][i]) negative++;
         }
-        printf("додатня степінь вершини %2i: %2i | ", i + 1, positive);
-        printf("від'ємна степінь вершини %2i: %2i", i + 1, negative);
-        printf("\n");
+        powr_mat[i][0] = positive;
+        powr_mat[i][1] = negative;
     }
+    int homogeneous = 1;
+    for (int i = 0; i < size; i++) {
+        if (oriented) {
+            printf("вершина %2i: ", i + 1);
+            printf("додатня степінь %2i | ", powr_mat[i][0]);
+            printf("від'ємна степінь %2i", powr_mat[i][1]);
+            printf("\n");
+        }
+        else {
+            printf("степінь вершини %2i: %2i", i + 1,  powr_mat[i][0]);
+            printf("\n");
+        }
+        if (powr_mat[i][0] != powr_mat[(i + 1) % (size - 1)][0] ||
+            powr_mat[i][1] != powr_mat[(i + 1) % (size - 1)][1]) homogeneous = 0;
+    }
+    if (homogeneous) {
+        if (oriented)
+            printf("граф однорідний і має %i додатню та %i від'ємну степінь\n", powr_mat[0][0], powr_mat[0][1]);
+        else
+            printf("граф однорідний і має %i степінь\n", powr_mat[0][0]);
+    }
+}
+
+void mat_composition (int **target_mat, int **source_mat, int size) {
+    int **result = mat_create(size, size);
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
+            for (int k = 0; k < size; k++) {
+                result[i][j] += target_mat[i][k] * source_mat[k][j];
+            }
+        }
+    }
+    mat_cpy(target_mat, result, size);
+    free_mat(result, size);
+}
+
+void mat_union (int **target_mat, int **source_mat, int size) {
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
+            target_mat[i][j] += source_mat[i][j];
+        }
+    }
+}
+
+void mat_to_pow(int **target_mat, int n, int size) {
+    int **source_mat = mat_create(size, size);
+    mat_cpy(source_mat, target_mat, size);
+    for (int i = 0; i < n-1; i++) {
+        mat_composition(target_mat, source_mat, size);
+    }
+    free_mat(source_mat, size);
+}
+
+void mat_cpy (int **target_mat, int **source_mat, int size) {
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
+            target_mat[i][j] = source_mat[i][j];
+        }
+    }
+}
+
+void mat_to_bool (int **target_mat, int size) {
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
+            target_mat[i][j] = target_mat[i][j] == 0 ? 0 : 1;
+        }
+    }
+}
+
+void mat_2path (int **target_mat, int **source_mat, int **pow2_mat, int size) {
+    int **result = mat_create(size, size);
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
+            if (pow2_mat[i][j]) {
+                for (int k = 0; k < size; k++) {
+                    result[i][k] += source_mat[i][k] * source_mat[k][j];
+                    result[k][j] += source_mat[i][k] * source_mat[k][j];
+                }
+            }
+        }
+    }
+    mat_cpy(target_mat, result, size);
+    mat_to_bool(target_mat, size);
+    free_mat(result, size);
+}
+
+void mat_reach(int **target_mat, int **source_mat, int size) {
+    int **result = mat_create(size, size);
+    mat_cpy(target_mat, source_mat, size);
+
+    mat_union(result, target_mat, size);
+    for (int i = 0; i < size; i++) {
+        mat_to_pow(target_mat, i, size);
+        mat_union(result, target_mat, size);
+        result[i][i] += 1;
+    }
+    mat_cpy(target_mat, result, size);
+    mat_to_bool(target_mat, size);
+    free_mat(result, size);
+}
+void mat_transpose(int **target_mat,  int size) {
+    int **result = mat_create(size, size);
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
+            result[i][j] = target_mat[j][i];
+        }
+    }
+    mat_cpy(target_mat, result, size);
+    free_mat(result, size);
+};
+void mat_elem_by_elem (int **target_mat, int **source_mat, int size){
+    int **result = mat_create(size, size);
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
+            result[i][j] += target_mat[i][j] * source_mat[i][j];
+        }
+    }
+    mat_cpy(target_mat, result, size);
+    free_mat(result, size);
+}
+
+void mat_strong (int **target_mat, int **source_mat, int size) {
+    int **reach_mat = mat_create(size, size);
+    mat_reach(reach_mat, source_mat, size);
+    mat_cpy(target_mat, reach_mat, size);
+    mat_transpose(reach_mat, size);
+    mat_elem_by_elem(target_mat, reach_mat, size);
+    mat_to_bool(target_mat, size);
 }
 
 void print_mat(int **target_mat, int size1, int size2) {

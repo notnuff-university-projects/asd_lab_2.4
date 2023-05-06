@@ -197,10 +197,11 @@ void draw_graph(point_t *graph, int **relation_matrix, int size, int oriented) {
                         point_2 <= i && i <= point_3 && point_2 <= j && j <= point_3 ||
                         point_3 <= i && i < size && point_3 <= j && j < size ||
                         point_3 <= i && i < size &&  j == point_1 ||
-                        point_3 <= j && j < size &&  i == point_1);
+                        point_3 <= j && j < size &&  i == point_1 );
 
                 if (condition) { //на одній лінії знаходяться
-                    switch (abs(i - j) % (size - 1)) {
+                    int a = abs(i - j) % (size - 1) + abs(i - j) / (size - 1);
+                    switch (a) {
                         case 0:
                             if (relation_matrix[i][i]) {
                                 XDrawArc(dis, win, gc, this_vec->start_x + 0.3*POINT_RADIUS, this_vec->start_y,
