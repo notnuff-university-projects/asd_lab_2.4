@@ -23,5 +23,7 @@ void mat_reach (int **target_mat, int **source_mat,  int size);
 void mat_transpose (int **target_mat,  int size);
 void mat_elem_by_elem (int **target_mat, int **source_mat, int size);
 void mat_strong (int **target_mat, int **source_mat, int size);
-
+void cond_graph_matrix_create(int ***target_mat, int **strong_mat, int **rel_mat, int **cond_matrix, int size,
+                              int *cond_size);
+void cond_graph_create(point_t **cond_graph, point_t *simple_graph, int **cond_matrix, int size, int rel_mat_size);
 #endif //INC_2_3_GRAPH_CREATE_H

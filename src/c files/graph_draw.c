@@ -81,8 +81,11 @@ void draw_graph_vertices(point_t *graph, int size) {
     for (int i = 0; i < size; i++){
         XDrawArc(dis, win, gc, graph[i].x - POINT_RADIUS, graph[i].y - POINT_RADIUS,
                  2 * POINT_RADIUS, 2 * POINT_RADIUS, 0, 360 * 64);
-        XDrawString(dis, win, gc, graph[i].x - 2, graph[i].y + 4,
-                    graph[i].number, i < 9 ? 1 : 2);
+        if (graph[i].number[0] != 'K')
+            XDrawString(dis, win, gc, graph[i].x - 2, graph[i].y + 4,
+                        graph[i].number, i < 9 ? 1 : 2);
+        else XDrawString(dis, win, gc, graph[i].x - 2, graph[i].y + 4,
+                         graph[i].number, i < 9 ? 2 : 3);
     }
 }
 

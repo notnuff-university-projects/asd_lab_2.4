@@ -30,7 +30,6 @@ int **mat_create(int size1, int size2) {
 
 point_t *tri_graph_create(point_t *tar_graph, int graph_size) {
     double as_ratio = (double) SCREEN_HEIGHT / SCREEN_WIDTH;
-    tar_graph = malloc(sizeof (point_t) * graph_size);
     serv_point_t *serv_points = malloc(sizeof (serv_point_t) * graph_size);
     double indent_x = (double) 100 / SCREEN_WIDTH;
     double indent_y = (double) 400 / SCREEN_HEIGHT;
@@ -216,6 +215,7 @@ void mat_reach(int **target_mat, int **source_mat, int size) {
     mat_to_bool(target_mat, size);
     free_mat(result, size);
 }
+
 void mat_transpose(int **target_mat,  int size) {
     int **result = mat_create(size, size);
     for (int i = 0; i < size; i++) {
@@ -225,7 +225,8 @@ void mat_transpose(int **target_mat,  int size) {
     }
     mat_cpy(target_mat, result, size);
     free_mat(result, size);
-};
+}
+
 void mat_elem_by_elem (int **target_mat, int **source_mat, int size){
     int **result = mat_create(size, size);
     for (int i = 0; i < size; i++) {
@@ -244,6 +245,63 @@ void mat_strong (int **target_mat, int **source_mat, int size) {
     mat_transpose(reach_mat, size);
     mat_elem_by_elem(target_mat, reach_mat, size);
     mat_to_bool(target_mat, size);
+    free_mat(reach_mat, size);
+}
+
+void cond_graph_matrix_create(int ***target_mat, int **strong_mat, int **rel_mat, int **cond_matrix, int size,
+                              int *cond_size) {
+    if (cond_size == NULL) cond_size = malloc(sizeof (int));
+    int to_look[size];
+    int to_take = 0;
+
+    for (int i = 0; i < size; i++) to_look[i] = 1;
+
+    for (int i = 0; i < size; i++) {
+        if (to_look[i]) {
+            for (int j = i; j < size; j++) {
+                if (strong_mat[i][j]) {
+                    cond_matrix[to_take][j] = 1;
+                    to_look[j] = 0;
+                }
+            }
+            to_take++;
+        }
+    }
+    printf("printing cond matrix: \n");
+    print_mat(cond_matrix, size, size);
+
+    *cond_size = to_take;
+    if (*target_mat == NULL) *target_mat = mat_create(*cond_size, *cond_size);
+    int **tm = *target_mat;
+
+    for (int i = 0; i < *cond_size; i++) {
+        for (int j = 0; j < size; j++) {
+            if (cond_matrix[i][j] == 0) {
+                int cond_vertex;
+                for (int k = 0; k < size; k++) if (cond_matrix[k][j]) cond_vertex = k;
+                for (int k = 0; k < size; k++) tm[i][cond_vertex] += cond_matrix[i][k] * rel_mat[k][j];
+            }
+        }
+    }
+    mat_to_bool(tm, *cond_size);
+}
+
+void cond_graph_create(point_t **cond_graph, point_t *simple_graph, int **cond_matrix, int size, int rel_mat_size) {
+    if (*cond_graph == NULL) *cond_graph = malloc(sizeof (point_t) * size);
+    point_t *cg = *cond_graph;
+    for (int i = 0; i < size; i++) {
+        int point_x = 0, point_y = 0, divider = 0;
+        for (int j = 0; j < rel_mat_size; j++) {
+            if (cond_matrix[i][j]) {
+                point_x += simple_graph[j].x;
+                point_y += simple_graph[j].y;
+                divider++;
+            }
+        }
+        point_x /= divider; point_y /= divider;
+        cg[i].x = point_x; cg[i].y = point_y;
+        sprintf(cg[i].number, "K%d", i + 1);
+    }
 }
 
 void print_mat(int **target_mat, int size1, int size2) {

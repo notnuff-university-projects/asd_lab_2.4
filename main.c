@@ -15,21 +15,22 @@ int main() {
     int n1 = 2, n2 = 1, n3 = 2, n4 = 5;
     srand(n1 * 1000 + n2 * 100 + n3 * 10 + n4);
 
-    int n = 6+ n3;
-    double c = 1.0 - n3 * 0.01 - n4 * 0.01 - 0.3;
-    double **service_mat;
-    service_mat = randm(n, n);
+    int n = 10 + n3;
+    double c = 1.0 - n3 * 0.005 - n4 * 0.005 - 0.27;
 
-    int **rel_mat;
-    rel_mat = mat_create(n, n);
-    point_t *graph;
-
+    double **service_mat = randm(n, n);
+    int **rel_mat = mat_create(n, n);
+    point_t *graph = malloc(sizeof (point_t) * n);
+    point_t *cond_graph = NULL;
     int **pow2 = mat_create(n, n);
     int **path2 = mat_create(n, n);
     int **pow3 = mat_create(n, n);
     int **path3 = mat_create(n, n);
     int **reach_mat = mat_create(n, n);
     int **strong_mat = mat_create(n, n);
+    int **cond_graph_rel_mat = NULL;
+    int *cond_graph_size = malloc(sizeof (int));
+    int **cond_matrix = mat_create(n, n);
 
     XEvent event;
     KeySym key;
@@ -74,7 +75,7 @@ int main() {
                             rel_mat = mulmr(c, service_mat, rel_mat, n, n, oriented);
                             print_mat(rel_mat, n, n);
                             print_power(rel_mat, n, oriented);
-                            graph = tri_graph_create(graph, n);
+                            tri_graph_create(graph, n);
                             draw_graph(graph, rel_mat, n, oriented);
                             draw_graph_vertices(graph, n);
                             break;
@@ -121,6 +122,20 @@ int main() {
                             print_mat(strong_mat, n, n);
                             draw_graph(graph, strong_mat, n, 0);
                             draw_graph_vertices(graph, n);
+                            break;
+                        case 'c':
+                            redraw_x();
+
+                            mat_strong(strong_mat, rel_mat, n);
+
+                            cond_graph_matrix_create(&cond_graph_rel_mat, strong_mat, rel_mat, cond_matrix, n,
+                                                     cond_graph_size);
+                            cond_graph_create(&cond_graph, graph, cond_matrix, *cond_graph_size, n);
+                            printf("printing cond comp matrix: \n");
+                            print_mat(cond_graph_rel_mat, *cond_graph_size, *cond_graph_size);
+                            print_power(cond_graph_rel_mat, *cond_graph_size, 1);
+                            draw_graph(cond_graph, cond_graph_rel_mat, *cond_graph_size, 1);
+                            draw_graph_vertices(cond_graph, *cond_graph_size);
                             break;
                         default:
                             redraw_x();

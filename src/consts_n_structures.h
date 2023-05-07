@@ -17,7 +17,7 @@ typedef struct virtual_screen_space_point_t {
 typedef struct screen_space_point_t {
     int x;
     int y;
-    char number[2];
+    char number[3];
 } point_t;
 
 typedef struct vector {
