@@ -65,8 +65,9 @@ void arrow (double theta, int px, int py) {
 }
 
 void draw_graph_vertices(point_t *graph, int size) {
-    XSetForeground(dis, gc, 0xFFFFFF);
     for (int i = 0; i < size; i++) {
+        int col = graph[i].colour ? graph[i].colour : 0xFFFFFF;
+        XSetForeground(dis, gc, col);
         XFillArc(dis, win, gc,
                  graph[i].x - POINT_RADIUS, graph[i].y - POINT_RADIUS,
                  2 * POINT_RADIUS, 2 * POINT_RADIUS,
@@ -78,7 +79,7 @@ void draw_graph_vertices(point_t *graph, int size) {
                        2,
                        LineSolid,
                        CapButt, JoinMiter);
-    for (int i = 0; i < size; i++){
+    for (int i = 0; i < size; i++) {
         XDrawArc(dis, win, gc, graph[i].x - POINT_RADIUS, graph[i].y - POINT_RADIUS,
                  2 * POINT_RADIUS, 2 * POINT_RADIUS, 0, 360 * 64);
         if (graph[i].number[0] != 'K')

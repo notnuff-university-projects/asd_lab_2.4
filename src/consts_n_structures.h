@@ -17,6 +17,7 @@ typedef struct virtual_screen_space_point_t {
 typedef struct screen_space_point_t {
     int x;
     int y;
+    int colour;
     char number[3];
 } point_t;
 
@@ -43,4 +44,12 @@ typedef struct arrows_list_t {
     int py;
     struct arrows_list_t *next_arr;
 } a_list_t;
+
+typedef struct ways_list {
+    int v1;
+    int v2;
+    int v3;
+    int v4;
+} ways;
+
 #endif //INC_2_3_CONSTS_N_STRUCTURES_H

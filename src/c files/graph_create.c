@@ -93,7 +93,6 @@ int **mulmr(double coefficient, double **double_mat, int **target_mat, int size1
     return target_mat;
 }
 
-
 void free_mat (size_t **target_mat, int size) {
     for (int i = 0; i < size; i++) {
         free(target_mat[i]);
@@ -127,8 +126,8 @@ void print_power (int **target_mat, int size, int oriented) {
             printf("степінь вершини %2i: %2i", i + 1,  powr_mat[i][0]);
             printf("\n");
         }
-        if (powr_mat[i][0] != powr_mat[(i + 1) % (size - 1)][0] ||
-            powr_mat[i][1] != powr_mat[(i + 1) % (size - 1)][1]) homogeneous = 0;
+        if (powr_mat[i][0] != powr_mat[(i + 1) % (size)][0] ||
+            powr_mat[i][1] != powr_mat[(i + 1) % (size)][1]) homogeneous = 0;
     }
     if (homogeneous) {
         if (oriented)
@@ -136,6 +135,29 @@ void print_power (int **target_mat, int size, int oriented) {
         else
             printf("граф однорідний і має %i степінь\n", powr_mat[0][0]);
     }
+}
+
+void print_isolated (int **target_mat, int size, int oriented) {
+    int flag = 0;
+    for (int i = 0; i < size; i++) {
+        int positive = 0;
+        int negative = 0;
+        for (int j = 0; j < size; j++) {
+            if (target_mat[i][j]) positive++;
+            if (target_mat[j][i]) negative++;
+        }
+        switch (positive + negative * oriented) {
+                case 0:
+                    printf("вершина %i ізольована\n", i + 1);
+                    flag++;
+                    break;
+                case 1:
+                    printf("вершина %i висяча\n", i + 1);
+                    flag++;
+                    break;
+        }
+    }
+    if (!flag) printf("немає ізольованих чи висячих вершин\n");
 }
 
 void mat_composition (int **target_mat, int **source_mat, int size) {
@@ -179,26 +201,80 @@ void mat_cpy (int **target_mat, int **source_mat, int size) {
 void mat_to_bool (int **target_mat, int size) {
     for (int i = 0; i < size; i++) {
         for (int j = 0; j < size; j++) {
-            target_mat[i][j] = target_mat[i][j] == 0 ? 0 : 1;
+            target_mat[i][j] = target_mat[i][j] >= 1;
         }
     }
 }
 
-void mat_2path (int **target_mat, int **source_mat, int **pow2_mat, int size) {
-    int **result = mat_create(size, size);
+//ways *ways_2;
+int ways2_size = 0;
+ways *ways_2;
+void print_ways_2 (int **source_mat, int **pow2_mat, int size) {
+    for (int i = 0; i < size; i++)
+        for (int j = 0; j < size; j++)
+            ways2_size += pow2_mat[i][j];
+    ways_2 = malloc(sizeof(ways) * ways2_size);
+    int way_num = 0;
     for (int i = 0; i < size; i++) {
         for (int j = 0; j < size; j++) {
-            if (pow2_mat[i][j]) {
-                for (int k = 0; k < size; k++) {
-                    result[i][k] += source_mat[i][k] * source_mat[k][j];
-                    result[k][j] += source_mat[i][k] * source_mat[k][j];
+            int k = 0;
+            while (pow2_mat[i][j]) {
+                ways_2[way_num].v1 = i;
+                ways_2[way_num].v3 = j;
+                while (k < size) {
+                    if (source_mat[i][k] && source_mat[k][j]) {
+                        ways_2[way_num].v2 = k;
+                        k++;
+                        break;
+                    }
+                    k++;
                 }
+                way_num++;
+                pow2_mat[i][j]--;
             }
         }
     }
-    mat_cpy(target_mat, result, size);
-    mat_to_bool(target_mat, size);
-    free_mat(result, size);
+    for (int i = 0; i < ways2_size; i++) {
+        printf("%i->%i->%i\n", ways_2[i].v1 + 1, ways_2[i].v2 + 1, ways_2[i].v3 + 1);
+    }
+}
+
+void print_ways_3( int **source_mat, int **pow3_mat, int size) {
+    int ways_size = 0;
+    for (int i = 0; i < size; i++)
+        for (int j = 0; j < size; j++)
+            ways_size += pow3_mat[i][j];
+    ways *ways_3 =  malloc((ways_size) * sizeof (ways));
+
+    int way_num = 0;
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < size; j++) {
+            int k = 0;
+            while (pow3_mat[i][j]) {
+                ways_3[way_num].v1 = i;
+                ways_3[way_num].v4 = j;
+                while (k < ways2_size) {
+                    int v1 = ways_2[k].v1, v2 = ways_2[k].v2;
+                    if (ways_2[k].v3 == j && source_mat[i][v1]) {
+                        ways_3[way_num].v2 = v1;
+                        ways_3[way_num].v3 = v2;
+                        k++;
+                        break;
+                    }
+                    k++;
+                }
+                way_num++;
+                pow3_mat[i][j]--;
+            }
+        }
+    }
+
+    for (int i = 0; i < ways_size; i++) {
+        printf("%i->%i->%i->%i\n", ways_3[i].v1 + 1, ways_3[i].v2 + 1, ways_3[i].v3 + 1, ways_3[i].v4 + 1);
+    }
+    free(ways_3);
+    free(ways_2);
+    ways2_size = 0;
 }
 
 void mat_reach(int **target_mat, int **source_mat, int size) {
@@ -267,9 +343,7 @@ void cond_graph_matrix_create(int ***target_mat, int **strong_mat, int **rel_mat
             to_take++;
         }
     }
-    printf("printing cond matrix: \n");
     print_mat(cond_matrix, size, size);
-
     *cond_size = to_take;
     if (*target_mat == NULL) *target_mat = mat_create(*cond_size, *cond_size);
     int **tm = *target_mat;
@@ -286,20 +360,35 @@ void cond_graph_matrix_create(int ***target_mat, int **strong_mat, int **rel_mat
     mat_to_bool(tm, *cond_size);
 }
 
+void strong_graph_create(point_t *str_graph, int graph_size, int **cond_matrix) {
+    int col = 16777215 * ((double) rand() / RAND_MAX);
+    for (int i = 0; i < graph_size; i++) {
+        for (int j = 0; j < graph_size; j++) {
+            if (cond_matrix[i][j]) {
+                str_graph[j].colour = col;
+            }
+        }
+        col += 16777215 * ((double) rand() / RAND_MAX);
+    }
+}
+
 void cond_graph_create(point_t **cond_graph, point_t *simple_graph, int **cond_matrix, int size, int rel_mat_size) {
     if (*cond_graph == NULL) *cond_graph = malloc(sizeof (point_t) * size);
     point_t *cg = *cond_graph;
+    int col;
     for (int i = 0; i < size; i++) {
         int point_x = 0, point_y = 0, divider = 0;
         for (int j = 0; j < rel_mat_size; j++) {
             if (cond_matrix[i][j]) {
                 point_x += simple_graph[j].x;
                 point_y += simple_graph[j].y;
+                col = simple_graph[j].colour;
                 divider++;
             }
         }
         point_x /= divider; point_y /= divider;
         cg[i].x = point_x; cg[i].y = point_y;
+        cg[i].colour = col;
         sprintf(cg[i].number, "K%d", i + 1);
     }
 }
