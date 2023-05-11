@@ -201,7 +201,7 @@ void mat_cpy (int **target_mat, int **source_mat, int size) {
 void mat_to_bool (int **target_mat, int size) {
     for (int i = 0; i < size; i++) {
         for (int j = 0; j < size; j++) {
-            target_mat[i][j] = target_mat[i][j] >= 1;
+            target_mat[i][j] = target_mat[i][j] == 0 ? 0 : 1;
         }
     }
 }
@@ -343,7 +343,6 @@ void cond_graph_matrix_create(int ***target_mat, int **strong_mat, int **rel_mat
             to_take++;
         }
     }
-    print_mat(cond_matrix, size, size);
     *cond_size = to_take;
     if (*target_mat == NULL) *target_mat = mat_create(*cond_size, *cond_size);
     int **tm = *target_mat;
